@@ -1,0 +1,125 @@
+sum of first 10 integers
+
+        AREA SumOfTen, CODE, READONLY
+        ENTRY                   ; Mark this as the entry point
+
+        MOV R0, #10             ; R0 = loop counter (10 iterations)
+        MOV R1, #0              ; R1 = accumulator for sum
+        MOV R2, #1              ; R2 = value to add each time (1)
+
+LOOP    ADD R1, R1, R2          ; R1 = R1 + R2
+        SUBS R0, R0, #1         ; Decrement R0, update flags
+        BNE LOOP                ; If Z flag not set, repeat loop
+
+        END                     ; End of program
+
+
+factorial of given numbers--------------------
+
+        AREA fact, CODE, READONLY
+        ENTRY
+
+        MOV R0, #5          ; R0 = number to compute factorial of
+        MOV R1, #1          ; R1 = accumulator (starts at 1)
+
+        CMP R0, #0
+        BEQ STOP            ; If R0 == 0, jump to STOP
+
+LOOP    MUL R1, R1, R0      ; R1 = R1 * R0
+        SUBS R0, R0, #1     ; R0 = R0 - 1, update flags
+        BNE LOOP            ; If R0 != 0, continue loop
+
+STOP    NOP                 ; End of program (NOP = No Operation)
+        END
+
+sum of the array elements---------------------
+
+        AREA array_sum, CODE, READONLY
+        ENTRY
+
+        MOV R1, #3                  ; Number of elements in array
+        MOV R3, #0x40000000         ; R3 points to base address of array
+        LDR R4, [R3]                ; Load first element into R4 (sum)
+
+LOOP    ADD R3, R3, #4              ; Move to next array element
+        LDR R5, [R3]                ; Load next element
+        ADD R4, R4, R5              ; Add R5 to sum (R4)
+        SUBS R1, R1, #1             ; Decrement counter, update flags
+        BNE LOOP                    ; Repeat if R1 != 0
+
+        LDR R6, =0x4000001C         ; Load address to store sum
+        STR R4, [R6]                ; Store final sum
+
+        NOP                         ; End instruction
+        END
+
+square of a number from 1-10 using lookup table--------------------
+
+        AREA SQUARE, CODE, READONLY
+        ENTRY
+
+        MOV R1, #2              ; Let's say we want square of 2
+        LSL R1, R1, #2          ; R1 = R1 * 4 (index * 4 for byte offset)
+
+        LDR R0, =TABLE1         ; Load address of TABLE1 into R0
+        ADD R0, R0, R1          ; Add offset to base → now R0 points to TABLE1 + offset
+        LDR R3, [R0]            ; Load the square value from table into R3
+
+        NOP
+        NOP
+
+        B .
+
+TABLE1
+        DCD 0x00000000   ; 0² = 0
+        DCD 0x00000001   ; 1² = 1
+        DCD 0x00000004   ; 2² = 4
+        DCD 0x00000009   ; 3² = 9
+        DCD 0x00000010   ; 4² = 16
+        DCD 0x00000019   ; 5² = 25
+        DCD 0x00000024   ; 6² = 36
+        DCD 0x00000031   ; 7² = 49
+        DCD 0x00000040   ; 8² = 64
+        DCD 0x00000051   ; 9² = 81
+        DCD 0x00000064   ; 10² = 100
+
+        END
+
+largest and smallest element in an array
+
+        AREA LARGEST, CODE, READONLY
+        ENTRY                       ; Required in Keil to mark the start
+        MOV R5, #6                 ; Number of comparisons left (7 elements → 6 comparisons)
+        LDR R1, =VALUE1            ; Load base address of array
+        LDR R2, [R1], #4           ; Load first value into R2 (largest so far)
+
+LOOP    LDR R4, [R1], #4           ; Load next value into R4
+        CMP R2, R4                 ; Compare current max (R2) with new value
+        BHI SKIP                   ; If R2 > R4, skip update  //change BHI to BLs
+        MOV R2, R4                 ; Else, R4 is new max
+
+SKIP    SUBS R5, R5, #1            ; Decrement loop counter
+        BNE LOOP                   ; If not zero, loop again
+
+        LDR R4, =RESULT            ; Store final result
+        STR R2, [R4]
+
+        B .                        ; Infinite loop / stop here
+
+; ========== DATA ==========
+VALUE1  DCD 0X44444444
+        DCD 0X22222222
+        DCD 0X11111111
+        DCD 0X33333333
+        DCD 0XAAAAAAAA
+        DCD 0X88888888
+        DCD 0X99999999
+
+        AREA DATA2, DATA, READWRITE
+RESULT  DCD 0X0
+
+        END
+
+
+
+
